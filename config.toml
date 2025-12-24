@@ -1,0 +1,27 @@
+# rund configuration file
+
+[terminal]
+width = 800
+height = 600
+x = 100
+y = 100
+
+# Terminal to use: "cmd" or "wt" (Windows Terminal)
+terminal = "wt"
+
+# Directory for backup files (default: ./backups)
+backup_dir = "backups"
+
+# Uncomment to set default app
+# default_app = "nvim"
+
+pause_behavior = "auto"
+
+# Apps that DO NOT NEED to pause (interactive editors)
+editor_apps = "vim, nvim, nano, emacs, micro, helix, hx, code, subl"
+
+# Apps that pause ONLY for small files (viewers)
+viewer_apps = "bat, less, more, cat, type"
+
+# Apps that ALWAYS pause (output producers)
+always_pause_apps = "python, python3, node, ruby, perl, php"

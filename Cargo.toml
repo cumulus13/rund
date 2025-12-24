@@ -1,0 +1,61 @@
+bin = [
+    { name = "rund", path = "src/main.rs" },
+]
+
+[package]
+name = "rund"
+version = "0.1.0"
+edition = "2021"
+authors = [
+    "Hadi Cahyadi <cumulus13@gmail.com>",
+]
+description = "Run CLI apps in detached terminal popup windows with configurable size and position"
+license = "MIT"
+repository = "https://github.com/cumulus13/rund"
+homepage = "https://github.com/cumulus13/rund"
+documentation = "https://docs.rs/rund"
+readme = "README.md"
+keywords = [
+    "terminal",
+    "cli",
+    "popup",
+    "launcher",
+    "detached",
+]
+categories = [
+    "command-line-utilities",
+    "development-tools",
+]
+rust-version = "1.70"
+include = [
+    "src/**/*",
+    "Cargo.toml",
+    "README.md",
+    "LICENSE",
+]
+exclude = [
+    "*sublime*",
+    "test/",
+    "*.exe",
+    "src\\tmp*",
+    "GITHUB_ACTION.md",
+]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = [
+    "--cfg",
+    "docsrs",
+]
+
+[dependencies]
+arboard = "3.4"
+dunce = "1.0.5"
+sha2 = "0.10"
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
