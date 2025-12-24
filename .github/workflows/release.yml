@@ -13,21 +13,19 @@ jobs:
   build:
     name: Build ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
         include:
-          # Windows
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             name: rund-windows-x64.exe
           
-          # Linux
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             name: rund-linux-x64
           
-          # macOS
           - os: macos-latest
             target: x86_64-apple-darwin
             name: rund-macos-x64
@@ -37,11 +35,9 @@ jobs:
             name: rund-macos-arm64
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
 
@@ -50,8 +46,7 @@ jobs:
 
       - name: Prepare binary (Windows)
         if: matrix.os == 'windows-latest'
-        run: |
-          copy target\${{ matrix.target }}\release\rund.exe ${{ matrix.name }}
+        run: copy target\${{ matrix.target }}\release\rund.exe ${{ matrix.name }}
 
       - name: Prepare binary (Unix)
         if: matrix.os != 'windows-latest'
@@ -64,31 +59,35 @@ jobs:
         with:
           name: ${{ matrix.name }}
           path: ${{ matrix.name }}
+          if-no-files-found: warn
 
   release:
     name: Create Release
     needs: build
+    if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
+        continue-on-error: true
 
-      - name: Move binaries
+      - name: Prepare release
         run: |
           mkdir -p release
-          find artifacts -type f -exec mv {} release/ \;
-          ls -lah release/
-
-      - name: Create checksums
-        run: |
-          cd release
-          sha256sum * > SHA256SUMS.txt
-          cat SHA256SUMS.txt
+          if [ -d "artifacts" ]; then
+            find artifacts -type f -exec mv {} release/ \; 2>/dev/null || true
+          fi
+          if [ "$(ls -A release 2>/dev/null)" ]; then
+            cd release
+            sha256sum * > SHA256SUMS.txt 2>/dev/null || true
+            ls -lah
+          else
+            echo "No artifacts found, creating empty release"
+          fi
 
       - name: Get version
         id: version
@@ -101,31 +100,30 @@ jobs:
           draft: false
           prerelease: false
           files: release/*
+          fail_on_unmatched_files: false
           body: |
             ## Downloads
+            
+            Available binaries (check below for successful builds):
             
             - **Windows (x64)**: `rund-windows-x64.exe`
             - **Linux (x64)**: `rund-linux-x64`
             - **macOS (Intel)**: `rund-macos-x64`
             - **macOS (Apple Silicon)**: `rund-macos-arm64`
             
+            Note: Some builds may have failed. Only successfully built binaries are attached.
+            
             ## Installation
             
             **Windows:**
             ```powershell
-            # Download and run
             curl -L "https://github.com/cumulus13/rund/releases/download/${{ steps.version.outputs.VERSION }}/rund-windows-x64.exe" -o rund.exe
             ```
             
             **Linux/macOS:**
             ```bash
-            # Download, make executable, and move to PATH
+            # For Linux x64
             curl -L "https://github.com/cumulus13/rund/releases/download/${{ steps.version.outputs.VERSION }}/rund-linux-x64" -o rund
             chmod +x rund
             sudo mv rund /usr/local/bin/
-            ```
-            
-            ## Verify Download
-            ```bash
-            sha256sum -c SHA256SUMS.txt
             ```
