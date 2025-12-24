@@ -4,7 +4,7 @@ bin = [
 
 [package]
 name = "rund"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = [
     "Hadi Cahyadi <cumulus13@gmail.com>",
@@ -34,11 +34,14 @@ include = [
     "LICENSE",
 ]
 exclude = [
-    "*sublime*",
+    "*.sublime-*",
     "test/",
     "*.exe",
-    "src\\tmp*",
+    "src/tmp*",
     "GITHUB_ACTION.md",
+    "backups/",
+    ".github/",
+    "build.bat",
 ]
 
 [package.metadata.docs.rs]
